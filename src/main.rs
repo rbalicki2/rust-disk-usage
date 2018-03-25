@@ -1,7 +1,16 @@
-// #[macro_use] extern crate quicli;
-// use quicli::prelude::*;
+#[macro_use] extern crate quicli;
+use quicli::prelude::*;
 
-fn main() {
+// Add cool slogan for your app here, e.g.:
+/// Get first n lines of a file
+#[derive(Debug, StructOpt)]
+struct DuArgs {
+    // Add a positional argument that the user has to supply:
+    /// The folder
+    folder: String,
+}
+
+fn execute_du(folder: String) {
   use std::process::Command;
 
   let output = if cfg!(target_os = "windows") {
@@ -12,7 +21,7 @@ fn main() {
   } else {
     Command::new("sh")
       .arg("-c")
-      .arg("du -d 0 .")
+      .arg(format!("du -d 0 {}", folder))
       .output()
       .expect("failed to execute process")
   };
@@ -20,3 +29,7 @@ fn main() {
   let du_output: Vec<u8> = output.stdout;
   println!("{}", String::from_utf8(du_output).unwrap())
 }
+
+main!(|args: DuArgs| {
+  execute_du(args.folder);
+});
