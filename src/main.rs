@@ -17,6 +17,6 @@ fn main() {
       .expect("failed to execute process")
   };
 
-  let hello: Vec<u8> = output.stdout;
-  println!("{}", String::from_utf8(hello).unwrap())
+  let du_output: Vec<u8> = output.stdout;
+  println!("{}", String::from_utf8(du_output).unwrap())
 }
