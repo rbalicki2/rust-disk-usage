@@ -1,8 +1,11 @@
 #[macro_use] extern crate quicli;
 use quicli::prelude::*;
 
+// mostly equivalent to
+// find ./src/ -type f -exec ls -l {} \; | awk '{sum += $5} END {print sum}'
+
 // Add cool slogan for your app here, e.g.:
-/// Get first n lines of a file
+/// Get the size of all files in a folder
 #[derive(Debug, StructOpt)]
 struct DuArgs {
     // Add a positional argument that the user has to supply:
@@ -10,26 +13,23 @@ struct DuArgs {
     folder: String,
 }
 
-fn execute_du(folder: String) {
-  use std::process::Command;
+fn get_folder_size(folder: &str) -> u64 {
+  use std::fs;
+  let metadata = fs::metadata(folder).unwrap();
 
-  let output = if cfg!(target_os = "windows") {
-    Command::new("cmd")
-      .args(&["/C", "echo in theory this should work on Windows"])
-      .output()
-      .expect("failed to execute process")
-  } else {
-    Command::new("sh")
-      .arg("-c")
-      .arg(format!("du -d 0 {}", folder))
-      .output()
-      .expect("failed to execute process")
-  };
-
-  let du_output: Vec<u8> = output.stdout;
-  println!("{}", String::from_utf8(du_output).unwrap())
+  if metadata.is_dir() {
+    let paths = fs::read_dir(folder).unwrap();
+    return paths
+      .map(|p| {
+        let p = p.unwrap();
+        get_folder_size(p.path().to_str().unwrap())
+      })
+      .fold(0, |acc, size| acc + size)
+  }
+  metadata.len()
 }
 
 main!(|args: DuArgs| {
-  execute_du(args.folder);
+  let size = get_folder_size(&args.folder);
+  println!("{}", size);
 });
