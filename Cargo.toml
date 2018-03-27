@@ -5,3 +5,4 @@ authors = ["Robert <robert.balicki@gmail.com>"]
 
 [dependencies]
 quicli = "0.2"
+rayon = "1.0"
